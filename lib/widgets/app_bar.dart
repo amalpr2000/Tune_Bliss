@@ -1,0 +1,46 @@
+import 'package:flutter/material.dart';
+
+import '../screens/settings_screen.dart';
+
+class AppBarRow extends StatelessWidget {
+  AppBarRow({super.key, required this.title});
+  String title;
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+              fontSize: 30, color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        Spacer(),
+        IconButton(
+          onPressed: () {
+            // Navigator.of(context).push(MaterialPageRoute(
+            //   builder: (context) => Search(),
+            // ));
+          },
+          icon: Icon(
+            Icons.search_rounded,
+            color: Colors.white,
+            size: 25,
+          ),
+        ),
+        IconButton(
+          onPressed: () {
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => Settings(),
+            ));
+          },
+          icon: Icon(
+            Icons.settings,
+            color: Colors.white,
+            size: 25,
+          ),
+        )
+      ],
+    );
+  }
+}
