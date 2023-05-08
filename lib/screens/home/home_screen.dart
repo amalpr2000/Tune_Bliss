@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:tune_bliss/screens/home/miniplayer.dart';
 import '../../functions/fetch_songs.dart';
 import '../../widgets/app_bar.dart';
 import '../../widgets/like_icon.dart';
@@ -16,11 +17,14 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
+ValueNotifier<bool> home = ValueNotifier(true);
+
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     double displayWidth = MediaQuery.of(context).size.width;
     double displayHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Column(
@@ -33,99 +37,132 @@ class _HomePageState extends State<HomePage> {
             color: Colors.transparent,
             height: 10,
           ),
-          Expanded(
-              child: Material(
-            color: Colors.black.withOpacity(0),
-            child: ListView.separated(
-                physics: BouncingScrollPhysics(),
-                itemBuilder: (context, index) {
-                  bool isliked;
-                  if (likedSongsNotifier.value.contains(allsongs[index])) {
-                    isliked = true;
-                  } else {
-                    isliked = false;
-                  }
-                  return ListTile(
-                    onTap: () {
-                      MiniPlayer(context, index, displayHeight, displayWidth);
-                    },
-                    textColor: Colors.white,
-                    iconColor: Colors.white,
-                    tileColor: Color(0xFF20225D),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20)),
-                    leading: QueryArtworkWidget(
-                      artworkHeight: 60,
-                      artworkWidth: 60,
-                      size: 3000,
-                      quality: 100,
-                      artworkQuality: FilterQuality.high,
-                      artworkBorder: BorderRadius.circular(12),
-                      artworkFit: BoxFit.cover,
-                      id: allsongs[index].id!,
-                      type: ArtworkType.AUDIO,
-                      nullArtworkWidget: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.network(
-                            'https://upload.wikimedia.org/wikipedia/en/e/e5/Marshmello_and_Bastille_Happier.png'),
+          (allsongs.isEmpty)
+              ? Center(
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: 250,
                       ),
-                    ),
-                    title: Text(
-                      allsongs[index].songname!,
-                      style: TextStyle(overflow: TextOverflow.ellipsis),
-                    ),
-                    subtitle: Text(
-                      allsongs[index].artist!,
-                      style: TextStyle(
-                        color: Color(0xFF9DA8CD),
-                        overflow: TextOverflow.ellipsis,
+                      Text(
+                        'No Songs Found',
+                        style: TextStyle(color: Colors.white, fontSize: 20),
                       ),
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        LikedButton(
-                            isfav: likedSongsNotifier.value
-                                .contains(allsongs[index]),
-                            currentSongs: allsongs[index]),
-                        PopupMenuButton(
-                          icon: Icon(
-                            Icons.more_vert_rounded,
-                            color: Color(0xFF9DA8CD),
-                          ),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10)),
-                          color: Color(0xFF07014F),
-                          itemBuilder: (context) => [
-                            PopupMenuItem(
-                                value: 0,
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  children: [
-                                    Icon(Icons.playlist_add),
-                                    Text(
-                                      'Add to Playlist',
-                                      style: TextStyle(color: Colors.white),
+                    ],
+                  ),
+                )
+              : ValueListenableBuilder(
+                  valueListenable: home,
+                  builder: (context, value, child) {
+                    if (currentlyplaying != null) {
+                      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+                        showBottomSheet(
+                          backgroundColor: Colors.transparent,
+                          context: context,
+                          builder: (context) => const MiniPlayer(),
+                        );
+                      });
+                    }
+                    return Expanded(
+                        child: Material(
+                      color: Colors.black.withOpacity(0),
+                      child: ListView.separated(
+                          physics: BouncingScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            bool isliked;
+                            if (likedSongsNotifier.value
+                                .contains(allsongs[index])) {
+                              isliked = true;
+                            } else {
+                              isliked = false;
+                            }
+                            return ListTile(
+                              onTap: () {
+                                // MiniPlayer(context, index, displayHeight, displayWidth);
+                                playingAudio(allsongs, index);
+                                setState(() {});
+                              },
+                              textColor: Colors.white,
+                              iconColor: Colors.white,
+                              tileColor: const Color(0xFF20225D),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20)),
+                              leading: QueryArtworkWidget(
+                                artworkHeight: 60,
+                                artworkWidth: 60,
+                                size: 3000,
+                                quality: 100,
+                                artworkQuality: FilterQuality.high,
+                                artworkBorder: BorderRadius.circular(12),
+                                artworkFit: BoxFit.cover,
+                                id: allsongs[index].id!,
+                                type: ArtworkType.AUDIO,
+                                nullArtworkWidget: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.network(
+                                      'https://upload.wikimedia.org/wikipedia/en/e/e5/Marshmello_and_Bastille_Happier.png'),
+                                ),
+                              ),
+                              title: Text(
+                                allsongs[index].songname!,
+                                style:
+                                    TextStyle(overflow: TextOverflow.ellipsis),
+                              ),
+                              subtitle: Text(
+                                allsongs[index].artist!,
+                                style: TextStyle(
+                                  color: Color(0xFF9DA8CD),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  LikedButton(
+                                      isfav: likedSongsNotifier.value
+                                          .contains(allsongs[index]),
+                                      currentSongs: allsongs[index]),
+                                  PopupMenuButton(
+                                    icon: Icon(
+                                      Icons.more_vert_rounded,
+                                      color: Color(0xFF9DA8CD),
                                     ),
-                                  ],
-                                ))
-                          ],
-                          onSelected: (value) =>
-                              Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) =>
-                                AddToPlaylist(song: allsongs[index]),
-                          )),
-                        )
-                      ],
-                    ),
-                  );
-                },
-                separatorBuilder: (context, index) => SizedBox(
-                      height: 10,
-                    ),
-                itemCount: allsongs.length),
-          )),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
+                                    color: Color(0xFF07014F),
+                                    itemBuilder: (context) => [
+                                      PopupMenuItem(
+                                          value: 0,
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceAround,
+                                            children: [
+                                              Icon(Icons.playlist_add),
+                                              Text(
+                                                'Add to Playlist',
+                                                style: TextStyle(
+                                                    color: Colors.white),
+                                              ),
+                                            ],
+                                          ))
+                                    ],
+                                    onSelected: (value) => Navigator.of(context)
+                                        .push(MaterialPageRoute(
+                                      builder: (context) =>
+                                          AddToPlaylist(song: allsongs[index]),
+                                    )),
+                                  )
+                                ],
+                              ),
+                            );
+                          },
+                          separatorBuilder: (context, index) => SizedBox(
+                                height: 10,
+                              ),
+                          itemCount: allsongs.length),
+                    ));
+                  }),
         ],
       ),
       // floatingActionButton: FloatingActionButton(
@@ -151,7 +188,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  PersistentBottomSheetController<dynamic> MiniPlayer(BuildContext context,
+  PersistentBottomSheetController<dynamic> MiniiiPlayer(BuildContext context,
       int index, double displayHeight, double displayWidth) {
     return showBottomSheet(
       context: context,
@@ -159,7 +196,7 @@ class _HomePageState extends State<HomePage> {
         return ColoredBox(
           color: Color(0xFF030230),
           child: InkWell(
-            onTap: () => musicBottomPage(context, displayHeight, displayWidth),
+            // onTap: () => musicBottomPage(context, displayHeight, displayWidth),
             child: Container(
               height: 76,
               decoration: BoxDecoration(
@@ -200,17 +237,17 @@ class _HomePageState extends State<HomePage> {
                   ),
                   Spacer(),
                   IconNew(
-                      size: 40,
-                      icon: Icons.skip_previous_rounded,
-                      btnState: isPlay),
+                    size: 40,
+                    icon: Icons.skip_previous_rounded,
+                  ),
                   IconNew(
-                      size: 40,
-                      icon: Icons.play_circle_fill_rounded,
-                      btnState: isPlay),
+                    size: 40,
+                    icon: Icons.play_circle_fill_rounded,
+                  ),
                   IconNew(
-                      size: 40,
-                      icon: Icons.skip_next_rounded,
-                      btnState: isPlay),
+                    size: 40,
+                    icon: Icons.skip_next_rounded,
+                  ),
                   Spacer()
                 ],
               ),

@@ -1,86 +1,76 @@
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import 'package:tune_bliss/screens/home/miniplayer.dart';
-
+import 'package:tune_bliss/model/song_model.dart';
+import 'package:tune_bliss/screens/liked/liked_screen.dart';
+import 'package:tune_bliss/screens/playlist/add_to_playlist.dart';
 import '../../functions/fetch_songs.dart';
-import '../../model/song_model.dart';
 import '../../widgets/app_bar.dart';
 import '../../widgets/like_icon.dart';
-import '../now_playing.dart';
-import '../playlist/add_to_playlist.dart';
+import '../bottom_nav.dart';
+import '../home/miniplayer.dart';
 
-class Liked extends StatefulWidget {
-  Liked({
-    super.key,
-    required this.displayWidth,
-  });
+ValueNotifier<List<Songs>> mostPlayedList = ValueNotifier([]);
 
-  final double displayWidth;
+class MostPlayed extends StatelessWidget {
+  const MostPlayed({super.key});
 
-  @override
-  State<Liked> createState() => _LikedState();
-}
-
-ValueNotifier<List<Songs>> likedSongsNotifier = ValueNotifier([]);
-
-class _LikedState extends State<Liked> {
   @override
   Widget build(BuildContext context) {
+    double displayWidth = MediaQuery.of(context).size.width;
+    double displayHeight = MediaQuery.of(context).size.height;
     return Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AppBarRow(
-              title: ' Liked Songs',
-            ),
-            Container(
-              color: Colors.transparent,
-              height: 15,
-            ),
-            ValueListenableBuilder(
-              valueListenable: likedSongsNotifier,
-              builder: (context, value, child) {
-                if (currentlyplaying != null) {
-                  WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-                    showBottomSheet(
-                      backgroundColor: Colors.transparent,
-                      context: context,
-                      builder: (context) => const MiniPlayer(),
-                    );
-                  });
-                }
-                return (likedSongsNotifier.value.isEmpty)
-                    ? Center(
-                        child: Column(
-                          children: [
-                            SizedBox(
-                              height: 200,
-                            ),
-                            Text(
-                              'Add songs to liked',
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 20),
-                            ),
-                          ],
-                        ),
-                      )
-                    : Expanded(
-                        child: Material(
+      body: Container(
+        height: displayHeight,
+        width: displayWidth,
+        decoration: BoxDecoration(gradient: bodyGradient),
+        child: SafeArea(
+            child: Padding(
+          padding: EdgeInsets.only(
+              right: displayWidth * .05,
+              left: displayWidth * .05,
+              top: displayWidth * .06),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppBarRow(title: 'Most Played'),
+              Container(
+                color: Colors.transparent,
+                height: 15,
+              ),
+              (mostPlayedList.value.isEmpty)
+                  ? Center(
+                      child: Column(
+                        children: [
+                          SizedBox(
+                            height: 250,
+                          ),
+                          Text(
+                            'No Songs Found',
+                            style: TextStyle(color: Colors.white, fontSize: 20),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ValueListenableBuilder(
+                      valueListenable: mostPlayedList,
+                      builder: (context, value, child) => Expanded(
+                          child: Material(
                         color: Colors.black.withOpacity(0),
                         child: ListView.separated(
                             physics: BouncingScrollPhysics(),
                             itemBuilder: (context, index) {
                               return ListTile(
                                 onTap: () {
-                                  int idx = 0;
-                                  for (idx = 0; idx < allsongs.length; idx++) {
-                                    if (likedSongsNotifier.value[index].id ==
-                                        allsongs[idx].id) {
-                                      break;
-                                    }
-                                  }
-                                  playingAudio(allsongs, idx);
+                                  playerMini.stop();
+                                  playingAudio(mostPlayedList.value, index);
+                                  showBottomSheet(
+                                    backgroundColor: Colors.transparent,
+                                    context: context,
+                                    builder: (context) => Padding(
+                                      padding: const EdgeInsets.all(20),
+                                      child: const MiniPlayer(),
+                                    ),
+                                  );
                                 },
                                 textColor: Colors.white,
                                 iconColor: Colors.white,
@@ -95,7 +85,7 @@ class _LikedState extends State<Liked> {
                                   artworkQuality: FilterQuality.high,
                                   artworkBorder: BorderRadius.circular(12),
                                   artworkFit: BoxFit.cover,
-                                  id: likedSongsNotifier.value[index].id!,
+                                  id: mostPlayedList.value[index].id!,
                                   type: ArtworkType.AUDIO,
                                   nullArtworkWidget: ClipRRect(
                                     borderRadius: BorderRadius.circular(12),
@@ -104,20 +94,27 @@ class _LikedState extends State<Liked> {
                                   ),
                                 ),
                                 title: Text(
-                                  likedSongsNotifier.value[index].songname!,
+                                  mostPlayedList.value[index].songname!,
+                                  style: TextStyle(
+                                      overflow: TextOverflow.ellipsis),
                                 ),
                                 subtitle: Text(
-                                  likedSongsNotifier.value[index].artist!,
+                                  mostPlayedList.value[index].artist!,
                                   overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(color: Color(0xFF9DA8CD)),
+                                  style: TextStyle(
+                                    color: Color(0xFF9DA8CD),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     LikedButton(
-                                        isfav: true,
+                                        isfav: likedSongsNotifier.value
+                                            .contains(
+                                                mostPlayedList.value[index]),
                                         currentSongs:
-                                            likedSongsNotifier.value[index]),
+                                            mostPlayedList.value[index]),
                                     PopupMenuButton(
                                       icon: Icon(
                                         Icons.more_vert_rounded,
@@ -147,8 +144,7 @@ class _LikedState extends State<Liked> {
                                           Navigator.of(context)
                                               .push(MaterialPageRoute(
                                         builder: (context) => AddToPlaylist(
-                                            song: likedSongsNotifier
-                                                .value[index]),
+                                            song: mostPlayedList.value[index]),
                                       )),
                                     )
                                   ],
@@ -159,26 +155,13 @@ class _LikedState extends State<Liked> {
                                 SizedBox(
                                   height: 10,
                                 ),
-                            itemCount: likedSongsNotifier.value.length),
-                      ));
-              },
-            )
-          ],
-        ));
+                            itemCount: mostPlayedList.value.length),
+                      )),
+                    )
+            ],
+          ),
+        )),
+      ),
+    );
   }
-}
-
-void snack(BuildContext context,
-    {required String message, required Color color}) {
-  ScaffoldMessenger.of(context)
-    ..removeCurrentSnackBar()
-    ..showSnackBar(SnackBar(
-      duration: Duration(seconds: 1),
-      content: Text(message),
-      backgroundColor: color,
-      elevation: 6,
-      behavior: SnackBarBehavior.floating,
-      margin: EdgeInsets.symmetric(horizontal: 21),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-    ));
 }

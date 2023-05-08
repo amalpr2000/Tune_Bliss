@@ -35,6 +35,7 @@ class _LikedButtonState extends State<LikedButton> {
         icon: widget.isfav
             ? Icon(
                 Icons.favorite_rounded,
+                color: Colors.white,
               )
             : Icon(
                 Icons.favorite_outline_rounded,

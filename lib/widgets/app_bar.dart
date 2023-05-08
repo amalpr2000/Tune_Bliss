@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tune_bliss/screens/search_screen.dart';
 
 import '../screens/settings_screen.dart';
 
@@ -18,9 +19,9 @@ class AppBarRow extends StatelessWidget {
         Spacer(),
         IconButton(
           onPressed: () {
-            // Navigator.of(context).push(MaterialPageRoute(
-            //   builder: (context) => Search(),
-            // ));
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => Search(),
+            ));
           },
           icon: Icon(
             Icons.search_rounded,

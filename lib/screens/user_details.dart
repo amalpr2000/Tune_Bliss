@@ -1,6 +1,7 @@
-
 import 'package:action_slider/action_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:tune_bliss/screens/splash_screen.dart';
 import 'bottom_nav.dart';
 
 class LandingPage extends StatefulWidget {
@@ -39,8 +40,8 @@ class _LandingPageState extends State<LandingPage> {
                       style: TextStyle(color: Colors.white),
                     ),
                     IconButton(
-                        onPressed: () =>
-                            Navigator.of(context).push(MaterialPageRoute(
+                        onPressed: () => Navigator.of(context)
+                                .pushReplacement(MaterialPageRoute(
                               builder: (context) => BottomNav(),
                             )),
                         icon: Icon(
@@ -106,11 +107,14 @@ class _LandingPageState extends State<LandingPage> {
                   ),
                   action: (controller) async {
                     controller.loading(); //starts loading animation
-                    await Future.delayed(const Duration(seconds: 3));
-                    String userName = userNamecontroller.text;
-                    if (userName.isNotEmpty) {
+                    await Future.delayed(const Duration(seconds: 1));
+                    String userName = userNamecontroller.text.trim();
+                    if (userName.trim().isNotEmpty) {
+                      final userNameDb = await Hive.openBox<String>('userName');
+                      userNameDb.add(userNamecontroller.text.trim());
+                      userId = userName;
                       controller.success(); //starts success animation
-                      await Future.delayed(const Duration(seconds: 2));
+                      await Future.delayed(const Duration(seconds: 1));
 
                       Navigator.of(context).push(
                           MaterialPageRoute(builder: (ctx) => BottomNav()));
@@ -126,5 +130,11 @@ class _LandingPageState extends State<LandingPage> {
         ),
       ),
     );
+  }
+
+  userNameFunction() {
+    if (userId.isEmpty) {
+      userId = userNamecontroller.text;
+    } else {}
   }
 }

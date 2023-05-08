@@ -7,3 +7,18 @@ class LikedSongs extends HiveObject {
   int? id;
   LikedSongs({required this.id});
 }
+
+
+
+
+hi() async{
+  Box<LikedSongs> likedatabase=await Hive.openBox('like');
+
+  List temp=[];
+  temp.addAll(likedatabase.values);
+
+  LikedSongs likeobj=LikedSongs(id: 1);
+  likedatabase.add(likeobj);
+
+  likedatabase.put(1, likeobj);
+}

@@ -4,9 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:tune_bliss/screens/library/most_played.dart';
+import 'package:tune_bliss/screens/library/recent_played.dart';
 import 'package:tune_bliss/screens/playlist/playlist_screen.dart';
 import 'package:tune_bliss/screens/user_details.dart';
-
 import '../database/model/liked_model/liked_model.dart';
 import '../database/model/playlist_model/playlist_model.dart';
 import '../functions/fetch_songs.dart';
@@ -21,6 +22,8 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
+String userId = 'UserID#4546';
+
 class _SplashScreenState extends State<SplashScreen> {
   final audioQuery = OnAudioQuery();
   @override
@@ -30,9 +33,17 @@ class _SplashScreenState extends State<SplashScreen> {
     Timer(const Duration(seconds: 3), () async {
       await fetchSongs();
 
-      Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (context) => const LandingPage(),
-      ));
+      final userNameDb = await Hive.openBox<String>('userName');
+      if (userNameDb.isNotEmpty) {
+        userId = userNameDb.values.last;
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (context) => BottomNav(),
+        ));
+      } else {
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (context) => const LandingPage(),
+        ));
+      }
     });
   }
 
@@ -46,24 +57,17 @@ class _SplashScreenState extends State<SplashScreen> {
         width: displayWidth,
         decoration: BoxDecoration(gradient: bodyGradient),
         child: SafeArea(
-            child: Padding(
-          padding: EdgeInsets.only(
-            right: displayWidth * .05,
-            left: displayWidth * .05,
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Image(
-                  image: AssetImage('assets/logo/logo.png'),
-                  width: displayWidth * .6,
-                  height: displayHeight * .2,
-                ),
-              ),
-            ],
-          ),
+            child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Image(
+                  image: AssetImage('assets/images/splashAnimation.gif'),
+                  width: displayWidth,
+                  height: displayHeight * .9),
+            ),
+          ],
         )),
       ),
     );
@@ -91,9 +95,11 @@ class _SplashScreenState extends State<SplashScreen> {
               songurl: element.uri));
         }
       }
-      favFetching();
-      playlistfetch();
     }
+    await favFetching();
+    await playlistfetch();
+    await mostplayedfetch();
+    await recentFetch();
   }
 
   Future favFetching() async {
@@ -146,6 +152,58 @@ class _SplashScreenState extends State<SplashScreen> {
       return true;
     } else {
       return false;
+    }
+  }
+
+  mostplayedfetch() async {
+    Box<int> mostplayedDb = await Hive.openBox('mostplayed');
+    if (mostplayedDb.isEmpty) {
+      for (Songs song in allsongs) {
+        mostplayedDb.put(song.id, 0);
+      }
+    } else {
+      List<List<int>> mostplayedTemp = [];
+      for (Songs song in allsongs) {
+        int count = mostplayedDb.get(song.id)!;
+        mostplayedTemp.add([song.id!, count]);
+      }
+      for (int i = 0; i < mostplayedTemp.length - 1; i++) {
+        for (int j = i + 1; j < mostplayedTemp.length; j++) {
+          if (mostplayedTemp[i][1] < mostplayedTemp[j][1]) {
+            List<int> temp = mostplayedTemp[i];
+            mostplayedTemp[i] = mostplayedTemp[j];
+            mostplayedTemp[j] = temp;
+          }
+        }
+      }
+      List<List<int>> temp = [];
+      for (int i = 0; i < mostplayedTemp.length && i < 10; i++) {
+        temp.add(mostplayedTemp[i]);
+      }
+      mostplayedTemp = temp;
+      for (List<int> element in mostplayedTemp) {
+        for (Songs song in allsongs) {
+          if (element[0] == song.id && element[1] > 3) {
+            mostPlayedList.value.add(song);
+          }
+        }
+      }
+    }
+  }
+
+  recentFetch() async {
+    Box<int> recentdb = await Hive.openBox('recent');
+
+    List<Songs> recentlist = [];
+
+    for (var element in recentdb.values) {
+      for (Songs songs in allsongs) {
+        if (element == songs.id) {
+          recentlist.add(songs);
+          break;
+        }
+      }
+      recentSongs.value = recentlist.reversed.toList();
     }
   }
 }

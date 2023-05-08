@@ -1,4 +1,5 @@
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:tune_bliss/screens/playlist/current_playlist.dart';
 import '../../model/song_model.dart';
 import '../../screens/playlist/playlist_screen.dart';
 import '../model/playlist_model/playlist_model.dart';
@@ -9,6 +10,43 @@ Future playlistcreating(String name) async {
   playlistDB.add(PlaylistModal(playlistName: name));
   print(playlistDB.values);
   playlistDB.close();
+}
+
+Future playlistAddDB(Songs addingSong, String playlistName) async {
+  Box<PlaylistModal> playlistdb = await Hive.openBox('playlist');
+
+  for (PlaylistModal element in playlistdb.values) {
+    if (element.playlistName == playlistName) {
+      var key = element.key;
+      PlaylistModal updatePlaylist = PlaylistModal(playlistName: playlistName);
+      updatePlaylist.playlistSongID.addAll(element.playlistSongID);
+      updatePlaylist.playlistSongID.add(addingSong.id!);
+      playlistdb.put(key, updatePlaylist);
+      break;
+    }
+  }
+
+  currentPlaylistBodyNotifier.notifyListeners();
+
+  playlistdb.close();
+}
+
+Future playlistRemoveDB(Songs removingSong, String playlistName) async {
+  Box<PlaylistModal> playlistdb = await Hive.openBox('playlist');
+  for (PlaylistModal element in playlistdb.values) {
+    if (element.playlistName == playlistName) {
+      var key = element.key;
+      PlaylistModal ubdatePlaylist = PlaylistModal(playlistName: playlistName);
+      for (int item in element.playlistSongID) {
+        if (item == removingSong.id) {
+          continue;
+        }
+        ubdatePlaylist.playlistSongID.add(item);
+      }
+      playlistdb.put(key, ubdatePlaylist);
+      break;
+    }
+  }
 }
 
 Future playlistRename(

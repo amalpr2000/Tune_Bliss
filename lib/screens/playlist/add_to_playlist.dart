@@ -81,7 +81,6 @@ class AddToPlaylistState extends State<AddToPlaylist> {
                                               Icons.playlist_play_rounded,
                                               size: 25,
                                             ),
-                                            // suffixIcon: Icon(Icons.clear_rounded),
                                             hintText: 'Playlist name',
                                             enabledBorder: OutlineInputBorder(
                                                 borderRadius:
@@ -140,76 +139,103 @@ class AddToPlaylistState extends State<AddToPlaylist> {
                     SizedBox(
                       height: 20,
                     ),
-                    Expanded(
-                      child: GridView.builder(
-                        itemCount: playlist.length,
-                        physics: BouncingScrollPhysics(),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 30,
-                            mainAxisSpacing: 30),
-                        itemBuilder: (context, index) {
-                          return InkWell(
-                            highlightColor: Colors.white,
-                            onTap: () {
-                              if (!playlist[index]
-                                  .playlistSongs
-                                  .contains(widget.song)) {
-                                playlist[index].playlistSongs.add(widget.song);
-                                // Future CurrentPlaylistSongs(String name,Songs song) async{
-                                //   Box<PlaylistModal> playlistDB= await Hive.openBox('playlist');
-                                //   for(PlaylistModal element in playlistDB.values){
-                                //     if(element.playlistName==name){
-                                //       var key=element.key;
-                                //       element.playlistSongID.add(song.id!);
-                                //       playlistDB.put(key, element);
-                                //     }
-                                //   }
-                                // }
-                              }
-                              Navigator.pop(context);
-                            },
-                            child: Container(
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(20),
-                                    image: DecorationImage(
-                                        image: NetworkImage(
-                                            'https://i.pinimg.com/550x/f5/51/7c/f5517cb156cf4176e929137e3363c08d.jpg'))),
-                                child: Stack(
-                                  alignment: Alignment.bottomCenter,
-                                  children: [
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.end,
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        Container(
-                                            decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.only(
-                                                  bottomLeft:
-                                                      Radius.circular(20),
-                                                  bottomRight:
-                                                      Radius.circular(20)),
-                                              color:
-                                                  Colors.black.withOpacity(.5),
-                                            ),
-                                            width: double.infinity,
-                                            height: 30,
-                                            child: Center(
-                                              child: Text(
-                                                playlist[index].playlistName,
-                                                style: TextStyle(
-                                                    color: Colors.white),
-                                              ),
-                                            )),
-                                      ],
-                                    )
-                                  ],
-                                )),
-                          );
-                        },
-                      ),
-                    ),
+                    (playlist.isEmpty)
+                        ? Center(
+                            child: Column(
+                              children: [
+                                SizedBox(
+                                  height: 250,
+                                ),
+                                Text(
+                                  'No Playlist Found',
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 20),
+                                ),
+                              ],
+                            ),
+                          )
+                        : Expanded(
+                            child: GridView.builder(
+                              itemCount: playlist.length,
+                              physics: BouncingScrollPhysics(),
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 2,
+                                      crossAxisSpacing: 30,
+                                      mainAxisSpacing: 30),
+                              itemBuilder: (context, index) {
+                                return InkWell(
+                                  highlightColor: Colors.white,
+                                  onTap: () {
+                                    if (playlist[index]
+                                        .playlistSongs
+                                        .contains(widget.song)) {
+                                      snack(context,
+                                          message: 'Song is already exist',
+                                          color: Colors.red);
+                                    } else {
+                                      snack(context,
+                                          message:
+                                              'Song is added to ${playlist[index].playlistName}',
+                                          color: Colors.green);
+                                    }
+
+                                    if (!playlist[index]
+                                        .playlistSongs
+                                        .contains(widget.song)) {
+                                      playlist[index]
+                                          .playlistSongs
+                                          .add(widget.song);
+                                    }
+
+                                    Navigator.pop(context);
+                                  },
+                                  child: Container(
+                                      decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                          image: DecorationImage(
+                                              image: AssetImage(
+                                                  'assets/images/playlistcover.jpg'))),
+                                      child: Stack(
+                                        alignment: Alignment.bottomCenter,
+                                        children: [
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.end,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.end,
+                                            children: [
+                                              Container(
+                                                  decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.only(
+                                                            bottomLeft: Radius
+                                                                .circular(20),
+                                                            bottomRight:
+                                                                Radius.circular(
+                                                                    20)),
+                                                    color: Colors.black
+                                                        .withOpacity(.5),
+                                                  ),
+                                                  width: double.infinity,
+                                                  height: 30,
+                                                  child: Center(
+                                                    child: Text(
+                                                      playlist[index]
+                                                          .playlistName,
+                                                      style: TextStyle(
+                                                          color: Colors.white),
+                                                    ),
+                                                  )),
+                                            ],
+                                          )
+                                        ],
+                                      )),
+                                );
+                              },
+                            ),
+                          ),
                   ],
                 ))),
       ),

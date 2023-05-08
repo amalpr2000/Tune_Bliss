@@ -29,3 +29,27 @@ removeFromLiked(Songs song) async {
     }
   }
 }
+
+// hello()async{
+
+// final song=await Hive.openBox<Songs>('trial');
+// final model=Songs(songname: 'ff', artist: 'artist', duration: 1, id: 1, songurl: 'songurl');
+// song.put(1, model);
+//  List<Songs> newlist=[];
+// newlist.addAll(song.values);
+
+// }
+
+// hi() async {
+//   final box = await Hive.openBox<EachPlaylist>('asdf');
+//   final model = EachPlaylist(playlistName: 'asdf');
+//   box.add(model);
+//   box.putAt(5, model);
+//   box.deleteAt(1);
+//   box.put(5, model);
+//   List<EachPlaylist> list = [];
+//   // list.addAll(box.values);
+// }
+
+
+

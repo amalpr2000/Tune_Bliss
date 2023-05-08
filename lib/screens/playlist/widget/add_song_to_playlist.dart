@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:tune_bliss/database/functions/playlist_db_function.dart';
+import 'package:tune_bliss/screens/playlist/current_playlist.dart';
 import '../../../model/song_model.dart';
 
 class AddSongToPlaylist extends StatefulWidget {
@@ -20,10 +22,14 @@ class _AddSongToPlaylistState extends State<AddSongToPlaylist> {
           if (isadded == false) {
             setState(() {
               widget.object.playlistSongs.add(widget.song);
+              playlistAddDB(widget.song, widget.object.playlistName);
+              currentPlaylistBodyNotifier.notifyListeners();
             });
           } else {
             setState(() {
               widget.object.playlistSongs.remove(widget.song);
+              playlistRemoveDB(widget.song, widget.object.playlistName);
+              currentPlaylistBodyNotifier.notifyListeners();
             });
           }
         },

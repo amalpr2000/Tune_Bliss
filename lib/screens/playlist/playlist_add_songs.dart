@@ -29,12 +29,28 @@ class PlaylistAddSongs extends StatelessWidget {
                     top: displayWidth * .05),
                 child: Column(
                   children: [
-                    Text(
-                      'Add To Playlist',
-                      style: TextStyle(
-                          fontSize: 30,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold),
+                    Row(
+                      children: [
+                        IconButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            icon: Icon(
+                              Icons.arrow_back_ios_new_rounded,
+                              size: 30,
+                              color: Colors.white,
+                            )),
+                        SizedBox(
+                          width: displayWidth * .08,
+                        ),
+                        Text(
+                          'Add To Playlist',
+                          style: TextStyle(
+                              fontSize: 30,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ],
                     ),
                     SizedBox(
                       height: displayHeight * .03,
@@ -73,8 +89,8 @@ class PlaylistAddSongs extends StatelessWidget {
                                 type: ArtworkType.AUDIO,
                                 nullArtworkWidget: ClipRRect(
                                   borderRadius: BorderRadius.circular(12),
-                                  child: Image.network(
-                                      'https://upload.wikimedia.org/wikipedia/en/e/e5/Marshmello_and_Bastille_Happier.png'),
+                                  child: Image.asset(
+                                      'assets/images/playlistcover.jpg'),
                                 ),
                               ),
                               title: Text(
